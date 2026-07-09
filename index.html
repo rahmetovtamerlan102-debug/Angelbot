@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spectra</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* ===== RESET ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            background: #0b1120;
+            color: #f0f4ff;
+            padding: 18px;
+            min-height: 100vh;
+            letter-spacing: 0.3px;
+            line-height: 1.5;
+        }
+
+        .light {
+            background: #f2f5fa;
+            color: #111827;
+        }
+
+        .card {
+            background: #141c2e;
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+            transition: 0.25s;
+        }
+
+        .light .card {
+            background: #ffffff;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+        }
+
+        /* ===== ШАПКА ===== */
+        .header {
+            text-align: center;
+            padding: 6px 0 12px 0;
+        }
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(145deg, #2bdb6e, #15a34a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .header p {
+            color: #8899bb;
+            font-size: 15px;
+            font-weight: 400;
+            margin-top: 4px;
+        }
+        .light .header p {
+            color: #5a6a8a;
+        }
+
+        /* ===== ПОИСК ===== */
+        .search-box {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .search-box input {
+            flex: 1;
+            height: 52px;
+            border: none;
+            border-radius: 16px;
+            padding: 0 18px;
+            font-size: 16px;
+            font-weight: 400;
+            background: #1f2a40;
+            color: #f0f4ff;
+            outline: 2px solid transparent;
+            transition: 0.25s;
+        }
+        .light .search-box input {
+            background: #eaedf2;
+            color: #111827;
+        }
+        .search-box input:focus {
+            outline-color: #2bdb6e;
+        }
+        .search-box button {
+            height: 52px;
+            padding: 0 28px;
+            border: none;
+            border-radius: 16px;
+            background: #2bdb6e;
+            color: #000;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .search-box button:hover {
+            background: #1fb854;
+            transform: scale(1.02);
+        }
+
+        /* ===== ИСТОРИЯ ===== */
+        .history-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #8899bb;
+            margin-bottom: 8px;
+        }
+        .history-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .history-item {
+            padding: 5px 16px;
+            border-radius: 30px;
+            background: #1f2a40;
+            color: #b2c9e8;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
+        .history-item:hover {
+            background: #2bdb6e;
+            color: #000;
+            border-color: #2bdb6e;
+        }
+        .light .history-item {
+            background: #eaedf2;
+            color: #2a3a5a;
+        }
+        .light .history-item:hover {
+            background: #2bdb6e;
+            color: #000;
+        }
+
+        /* ===== ПРОФИЛЬ ===== */
+        .profile {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+        }
+        .avatar {
+            width: 82px;
+            height: 82px;
+            border-radius: 50%;
+            border: 3px solid #2bdb6e;
+            object-fit: cover;
+            background: #1f2a40;
+            flex-shrink: 0;
+        }
+        .profile-info {
+            flex: 1;
+        }
+        .profile-name {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+        .profile-username {
+            color: #8899bb;
+            font-size: 14px;
+            margin-top: 2px;
+        }
+        .badge-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 6px 0 4px;
+        }
+        .badge {
+            padding: 3px 14px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+        .badge-premium {
+            background: #f7c948;
+            color: #000;
+        }
+        .badge-dc {
+            background: #1f2a40;
+            color: #8899bb;
+        }
+        .light .badge-dc {
+            background: #eaedf2;
+            color: #3a4a6a;
+        }
+        .badge-online {
+            background: #2bdb6e;
+            color: #000;
+        }
+        .badge-offline {
+            background: #3a3a5a;
+            color: #8899bb;
+        }
+        .profile-link {
+            color: #2bdb6e;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            display: inline-block;
+            margin-top: 4px;
+        }
+
+        /* ===== СТАТИСТИКА ===== */
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .light .stats-row {
+            border-top-color: #e6eaf0;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2bdb6e;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #8899bb;
+            margin-top: 2px;
+        }
+
+        /* ===== СКАМ ===== */
+        .scam {
+            border-left: 5px solid #e74c3c;
+        }
+        .scam-title {
+            color: #e74c3c;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        /* ===== ПОКРЫТИЕ ===== */
+        .coverage-circle {
+            width: 104px;
+            height: 104px;
+            border-radius: 50%;
+            border: 6px solid #2bdb6e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 10px auto;
+        }
+        .coverage-percent {
+            font-size: 26px;
+            font-weight: 700;
+            color: #f0f4ff;
+        }
+        .light .coverage-percent {
+            color: #111827;
+        }
+        .coverage-label {
+            font-size: 11px;
+            color: #8899bb;
+        }
+        .categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .cat {
+            padding: 4px 16px;
+            background: #1f2a40;
+            border-radius: 30px;
+            font-size: 12px;
+            color: #8899bb;
+        }
+        .light .cat {
+            background: #eaedf2;
+            color: #3a4a6a;
+        }
+        .cat.active {
+            background: #2bdb6e;
+            color: #000;
+        }
+        .light .cat.active {
+            background: #2bdb6e;
+            color: #000;
+        }
+
+        /* ===== ИНФО-СТРОКИ ===== */
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 7px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .light .info-row {
+            border-bottom-color: #e6eaf0;
+        }
+        .info-label {
+            color: #8899bb;
+            font-size: 14px;
+        }
+        .info-value {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        /* ===== КНОПКА CERERA ===== */
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 18px;
+            background: #2bdb6e;
+            color: #000;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn:hover {
+            background: #1fb854;
+            transform: scale(1.01);
+        }
+
+        /* ===== ЗАГРУЗКА ===== */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px 0;
+        }
+        .spinner {
+            width: 42px;
+            height: 42px;
+            margin: 0 auto 12px;
+            border: 4px solid #1f2a40;
+            border-top-color: #2bdb6e;
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===== ТЕМА ===== */
+        .theme-btn {
+            position: fixed;
+            top: 14px;
+            right: 14px;
+            width: 44px;
+            height: 44px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(6px);
+            font-size: 22px;
+            cursor: pointer;
+            color: #f0f4ff;
+            transition: 0.2s;
+        }
+        .light .theme-btn {
+            background: rgba(0, 0, 0, 0.05);
+            color: #111827;
+        }
+        .theme-btn:hover {
+            transform: scale(1.08);
+        }
+    </style>
+</head>
+<body class="dark">
+    <button class="theme-btn" onclick="toggleTheme()">🌓</button>
+
+    <!-- ===== ШАПКА ===== -->
+    <div class="header">
+        <h1>Spectra</h1>
+        <p>Введите username для поиска</p>
+    </div>
+
+    <!-- ===== ПОИСК ===== -->
+    <div class="card">
+        <div class="search-box">
+            <input id="searchInput" type="text" placeholder="Например: validat" />
+            <button onclick="searchUser()">Найти</button>
+        </div>
+    </div>
+
+    <!-- ===== ИСТОРИЯ ===== -->
+    <div id="historySection" class="card" style="display:none;">
+        <div class="history-label">📜 История поиска</div>
+        <div class="history-wrap" id="historyList"></div>
+    </div>
+
+    <!-- ===== ЗАГРУЗКА ===== -->
+    <div id="loading" class="card loading">
+        <div class="spinner"></div>
+        <div style="color:#8899bb;">Ищем данные...</div>
+    </div>
+
+    <!-- ===== РЕЗУЛЬТАТ ===== -->
+    <div id="result" style="display:none;">
+
+        <!-- ПРОФИЛЬ -->
+        <div class="card">
+            <div class="profile">
+                <img id="avatar" class="avatar" src="" alt="avatar" />
+                <div class="profile-info">
+                    <div class="profile-name" id="profileName">—</div>
+                    <div class="profile-username" id="profileUsername">@username · ID: <span id="userId">—</span></div>
+                    <div class="badge-group">
+                        <span class="badge badge-premium" id="premiumBadge" style="display:none;">Premium</span>
+                        <span class="badge badge-dc" id="dcBadge">DC —</span>
+                        <span class="badge badge-online" id="statusBadge">—</span>
+                    </div>
+                    <a class="profile-link" id="profileLink" href="#" target="_blank">t.me/username</a>
+                </div>
+            </div>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-number" id="photosCount">0</div>
+                    <div class="stat-label">Фото</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="regShort">—</div>
+                    <div class="stat-label">Регистрация</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="statusIcon">⚪</div>
+                    <div class="stat-label">Статус</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- СКАМ -->
+        <div class="card scam">
+            <div class="scam-title">⚠️ База мошенников</div>
+            <div id="scamResult" style="margin-top:6px; color:#e74c3c; font-weight:600;">—</div>
+            <div style="margin-top:4px;">
+                <a id="scamLink" href="#" target="_blank" style="color:#2bdb6e; text-decoration:none; font-size:13px;">Пост с обвинением →</a>
+            </div>
+        </div>
+
+        <!-- ПОКРЫТИЕ -->
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:600;">📊 Покрытие отчёта</span>
+                <span style="color:#8899bb; font-size:13px;">1/10</span>
+            </div>
+            <div class="coverage-circle">
+                <span class="coverage-percent" id="coveragePercent">10%</span>
+                <span class="coverage-label">покрытие</span>
+            </div>
+            <div class="categories">
+                <span class="cat active">Документы</span>
+                <span class="cat">Банки</span>
+                <span class="cat active">Соцсети</span>
+                <span class="cat">Работа</span>
+                <span class="cat">Связи</span>
+                <span class="cat">Адреса</span>
+                <span class="cat">Авто</span>
+                <span class="cat">Недвижимость</span>
+                <span class="cat">Нарушения</span>
+                <span class="cat">Связь лица</span>
+            </div>
+        </div>
+
+        <!-- ИНФО -->
+        <div class="card">
+            <div class="info-row"><span class="info-label">ФИО</span><span class="info-value" id="fioValue">— (1/5)</span></div>
+            <div class="info-row"><span class="info-label">Telegram</span><span class="info-value" id="tgValue">— (1/5)</span></div>
+            <div class="info-row"><span class="info-label">Сайты, где найден</span><span class="info-value" id="sitesValue">2</span></div>
+        </div>
+
+        <!-- CERERA -->
+        <a id="cereraLink" href="#" target="_blank">
+            <button class="btn">🔍 Открыть Cerera</button>
+        </a>
+
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        // ===== ТЕМА =====
+        function setTheme(theme) {
+            document.body.className = theme;
+            tg.setHeaderColor(theme === 'dark' ? '#0b1120' : '#f2f5fa');
+        }
+        function toggleTheme() {
+            setTheme(document.body.className === 'dark' ? 'light' : 'dark');
+        }
+        setTheme(tg.colorScheme === 'dark' ? 'dark' : 'light');
+
+        // ===== ИСТОРИЯ =====
+        let history = JSON.parse(localStorage.getItem('spectraHistory') || '[]');
+
+        function renderHistory() {
+            const section = document.getElementById('historySection');
+            const list = document.getElementById('historyList');
+            if (history.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            section.style.display = 'block';
+            list.innerHTML = history.map(name =>
+                `<span class="history-item" onclick="searchUser('${name}')">${name}</span>`
+            ).join('');
+        }
+        renderHistory();
+
+        function addHistory(name) {
+            if (!name) return;
+            history = [name, ...history.filter(x => x !== name)].slice(0, 12);
+            localStorage.setItem('spectraHistory', JSON.stringify(history));
+            renderHistory();
+        }
+
+        // ===== ПОИСК =====
+        function searchUser(username) {
+            if (!username) {
+                username = document.getElementById('searchInput').value.trim();
+            }
+            if (!username) {
+                tg.showPopup({ title: 'Ошибка', message: 'Введите username' });
+                return;
+            }
+
+            addHistory(username);
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            tg.sendData(JSON.stringify({ username: username }));
+            tg.close();
+        }
+
+        // ===== ОБНОВЛЕНИЕ ДАННЫХ =====
+        window.updateData = function(data) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('result').style.display = 'block';
+
+            if (data.avatar_url) {
+                document.getElementById('avatar').src = data.avatar_url;
+            }
+
+            document.getElementById('profileName').textContent = data.first_name || '—';
+            document.getElementById('profileUsername').innerHTML =
+                `@${data.username || '—'} · ID: <span id="userId">${data.id || '—'}</span>`;
+            document.getElementById('userId').textContent = data.id || '—';
+            document.getElementById('dcBadge').textContent = `DC ${data.dc_id || '—'}`;
+            document.getElementById('statusBadge').textContent = data.status || '—';
+            document.getElementById('statusBadge').className =
+                `badge ${data.status === 'онлайн' ? 'badge-online' : 'badge-offline'}`;
+            document.getElementById('profileLink').href = `https://t.me/${data.username || ''}`;
+            document.getElementById('profileLink').textContent = `t.me/${data.username || ''}`;
+            document.getElementById('photosCount').textContent = data.photos_count || 0;
+            document.getElementById('regShort').textContent = data.registered || '—';
+            document.getElementById('statusIcon').textContent = data.status === 'онлайн' ? '🟢' : '🔴';
+
+            const premium = document.getElementById('premiumBadge');
+            if (data.premium) {
+                premium.style.display = 'inline-block';
+            } else {
+                premium.style.display = 'none';
+            }
+
+            // Scam
+            const scam = document.getElementById('scamResult');
+            const scamLink = document.getElementById('scamLink');
+            if (data.scam && data.scam.length > 0) {
+                scam.textContent = '⚠️ Внесён в список мошенников!';
+                scamLink.href = data.scam[0].link || '#';
+                scamLink.style.display = 'inline';
+            } else {
+                scam.textContent = '✅ Не найден';
+                scam.style.color = '#2bdb6e';
+                scamLink.style.display = 'none';
+            }
+
+            document.getElementById('fioValue').textContent = `${data.first_name || '—'} (1/5)`;
+            document.getElementById('tgValue').textContent = `@${data.username || '—'} (1/5)`;
+            document.getElementById('sitesValue').textContent = data.sites_count || 2;
+            document.getElementById('cereraLink').href = `https://cerera.cc/search?q=${data.username || ''}`;
+
+            // Подарки удалены
+        };
+    </script>
+</body>
+  </html>
