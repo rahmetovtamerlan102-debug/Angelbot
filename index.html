@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spectra</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background: #0a0a1a;
+            color: #ffffff;
+            padding: 16px;
+            min-height: 100vh;
+        }
+
+        .card {
+            background: #15152e;
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 14px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #29d463, #1a9e4a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header p {
+            color: #8899bb;
+            font-size: 14px;
+        }
+
+        .history {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .history-item {
+            padding: 4px 14px;
+            background: #22224a;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #8899bb;
+            cursor: pointer;
+        }
+        .history-item:hover {
+            background: #29d463;
+            color: #000;
+        }
+
+        .profile {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid #29d463;
+            object-fit: cover;
+            background: #22224a;
+        }
+        .profile-info {
+            flex: 1;
+        }
+        .profile-info .name {
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .profile-info .username {
+            color: #8899bb;
+            font-size: 14px;
+        }
+        .profile-info .badges {
+            display: flex;
+            gap: 6px;
+            margin: 4px 0;
+        }
+        .badge {
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-premium {
+            background: #f1c40f;
+            color: #000;
+        }
+        .badge-dc {
+            background: #22224a;
+            color: #8899bb;
+        }
+        .badge-online {
+            background: #29d463;
+            color: #000;
+        }
+        .badge-offline {
+            background: #444466;
+            color: #8899bb;
+        }
+        .profile-link {
+            color: #29d463;
+            text-decoration: none;
+            font-size: 13px;
+            display: inline-block;
+            margin-top: 4px;
+        }
+
+        .stats-grid {
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-item .num {
+            font-size: 20px;
+            font-weight: 700;
+            color: #29d463;
+        }
+        .stat-item .label {
+            font-size: 12px;
+            color: #8899bb;
+        }
+
+        .scam {
+            border-left: 4px solid #e74c3c;
+        }
+        .scam-title {
+            color: #e74c3c;
+            font-weight: 700;
+        }
+
+        .coverage-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 6px solid #29d463;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 10px auto;
+        }
+        .coverage-circle .percent {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .coverage-circle .label {
+            font-size: 11px;
+            color: #8899bb;
+        }
+
+        .categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .cat {
+            padding: 4px 14px;
+            background: #22224a;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #8899bb;
+        }
+        .cat.active {
+            background: #29d463;
+            color: #000;
+        }
+
+        .gift-list {
+            font-size: 13px;
+            color: #8899bb;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .row .label {
+            color: #8899bb;
+        }
+        .row .value {
+            font-weight: 500;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 16px;
+            background: #29d463;
+            color: #000;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn:hover {
+            background: #1fb854;
+            transform: scale(1.01);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #22224a;
+            border-top: 4px solid #29d463;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
+        }
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="dark">
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+
+    <div class="header">
+        <h1>Spectra</h1>
+        <p>Введите username (например, validat)</p>
+    </div>
+
+    <div class="card" id="history-card" style="display:block;">
+        <div style="color:#8899bb; font-size:13px; margin-bottom:6px;">История поиска</div>
+        <div class="history" id="history-list">
+            <span class="history-item" onclick="searchUser('validat')">validat</span>
+            <span class="history-item" onclick="searchUser('jasty333')">jasty333</span>
+            <span class="history-item" onclick="searchUser('dark_ang')">dark_ang...</span>
+            <span class="history-item" onclick="searchUser('thhyp')">thhyp</span>
+            <span class="history-item" onclick="searchUser('qmaev')">qmaev</span>
+        </div>
+    </div>
+
+    <div id="result" style="display:block;">
+
+        <div class="card">
+            <div class="profile">
+                <img id="avatar" class="avatar" src="https://t.me/i/userpic/320/5689986522.jpg" alt="avatar">
+                <div class="profile-info">
+                    <div class="name" id="name">traxvezz</div>
+                    <div class="username" id="username">@validat · ID: <span id="user-id">5689986522</span></div>
+                    <div class="badges">
+                        <span class="badge badge-premium" id="premium" style="display:inline-block;">Premium ✨</span>
+                        <span class="badge badge-dc" id="dc-badge">DC 2</span>
+                        <span class="badge badge-online" id="status-badge">Онлайн</span>
+                    </div>
+                    <a class="profile-link" id="profile-link" href="https://t.me/validat" target="_blank">t.me/validat</a>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:space-around; margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.06);">
+                <div style="text-align:center;">
+                    <div style="font-size:20px; font-weight:700; color:#29d463;" id="photos-count">5</div>
+                    <div style="font-size:12px; color:#8899bb;">Фото</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:20px; font-weight:700; color:#29d463;" id="registered-short">~янв,2025</div>
+                    <div style="font-size:12px; color:#8899bb;">Регистрация</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:20px; font-weight:700; color:#29d463;" id="status-short">🟢</div>
+                    <div style="font-size:12px; color:#8899bb;">Статус</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card scam">
+            <div class="scam-title">⚠️ База мошенников</div>
+            <div id="scam-result" style="margin-top:6px; color:#e74c3c; font-weight:600;">Внесён в список мошенников!</div>
+            <div style="margin-top:4px;">
+                <a id="scam-link" href="https://t.me/GID_ScamBase/1916" target="_blank" style="color:#29d463; text-decoration:none; font-size:13px;">Пост с обвинением →</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:600;">📊 Покрытие отчёта</span>
+                <span style="color:#8899bb; font-size:13px;">1/10</span>
+            </div>
+            <div class="coverage-circle">
+                <span class="percent" id="coverage-percent">10%</span>
+                <span class="label">покрытие</span>
+            </div>
+            <div class="categories">
+                <span class="cat active">Документы</span>
+                <span class="cat">Банки</span>
+                <span class="cat active">Соцсети</span>
+                <span class="cat">Работа</span>
+                <span class="cat">Связи</span>
+                <span class="cat">Адреса</span>
+                <span class="cat">Авто</span>
+                <span class="cat">Недвижимость</span>
+                <span class="cat">Нарушения</span>
+                <span class="cat">Связь лица</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:600;">🎁 Подарки Telegram</span>
+                <span style="color:#29d463; font-weight:700;" id="gifts-count">65</span>
+            </div>
+            <div style="margin-top:8px;">
+                <div style="font-size:13px; color:#8899bb; margin-bottom:4px;">От кого получал(-а):</div>
+                <div class="gift-list" id="gifts-received">
+                    @jasty333 · @PashaGiftsBot · #1633680076 · @thhyp · @qmaev · @artis15 · @eswev · #8428138337 · #8561731665 · #5003858421 · @skidoze · #5393246210 · @Dark_Angel_sex · @Monster0963 · @wacox
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="row"><span class="label">ФИО</span><span class="value" id="fio-value">— (1/5)</span></div>
+            <div class="row"><span class="label">TELEGRAM</span><span class="value" id="tg-value">— (1/5)</span></div>
+            <div class="row"><span class="label">Сайты, где найден</span><span class="value" id="sites-value">2</span></div>
+        </div>
+
+        <a id="cerera-link" href="https://cerera.cc/search?q=validat" target="_blank">
+            <button class="btn">🔍 Открыть Cerera</button>
+        </a>
+
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        function setTheme(theme) {
+            document.body.className = theme;
+            tg.setHeaderColor(theme === 'dark' ? '#0a0a1a' : '#f0f2f5');
+        }
+
+        function toggleTheme() {
+            setTheme(document.body.className === 'dark' ? 'light' : 'dark');
+        }
+
+        setTheme(tg.colorScheme === 'dark' ? 'dark' : 'light');
+
+        function searchUser(username) {
+            console.log('Поиск: ' + username);
+            tg.sendData(JSON.stringify({ username: username }));
+        }
+
+        window.updateData = function(data) {
+            if (data.avatar_url) document.getElementById('avatar').src = data.avatar_url;
+            document.getElementById('name').textContent = data.first_name || 'traxvezz';
+            document.getElementById('username').innerHTML = `@${data.username || 'validat'} · ID: <span id="user-id">${data.id || '5689986522'}</span>`;
+            document.getElementById('user-id').textContent = data.id || '5689986522';
+            document.getElementById('dc-badge').textContent = `DC ${data.dc_id || '2'}`;
+            document.getElementById('status-badge').textContent = data.status || 'Онлайн';
+            document.getElementById('status-badge').className = `badge ${data.status === 'онлайн' ? 'badge-online' : 'badge-offline'}`;
+            document.getElementById('profile-link').href = `https://t.me/${data.username || ''}`;
+            document.getElementById('profile-link').textContent = `t.me/${data.username || ''}`;
+            document.getElementById('photos-count').textContent = data.photos_count || 0;
+            document.getElementById('registered-short').textContent = data.registered || '~янв,2025';
+            document.getElementById('status-short').textContent = data.status === 'онлайн' ? '🟢' : '🔴';
+
+            const premium = document.getElementById('premium');
+            if (data.premium) { premium.style.display = 'inline-block'; } else { premium.style.display = 'none'; }
+
+            const scam = document.getElementById('scam-result');
+            const scamLink = document.getElementById('scam-link');
+            if (data.scam && data.scam.length > 0) {
+                scam.textContent = '⚠️ Внесён в список мошенников!';
+                scamLink.href = data.scam[0].link || 'https://t.me/GID_ScamBase/1916';
+                scamLink.style.display = 'inline';
+            } else {
+                scam.textContent = '✅ Не найден';
+                scam.style.color = '#29d463';
+                scamLink.style.display = 'none';
+            }
+
+            if (data.gifts_received) {
+                document.getElementById('gifts-received').textContent = data.gifts_received;
+                document.getElementById('gifts-count').textContent = data.gifts_count || 65;
+            }
+
+            document.getElementById('fio-value').textContent = `${data.first_name || '—'} (1/5)`;
+            document.getElementById('tg-value').textContent = `@${data.username || '—'} (1/5)`;
+            document.getElementById('sites-value').textContent = data.sites_count || 2;
+            document.getElementById('cerera-link').href = `https://cerera.cc/search?q=${data.username || ''}`;
+        };
+    </script>
+</body>
+              </html>
